@@ -45,6 +45,17 @@
   font-size: 15px;
 }
 
+.container-form-button-block {
+	height: 40px;
+	width: 250px;
+	border-radius: 8px;
+	border: 2px solid #708090;
+	margin-top: 30px;
+	background: grey;
+	color: white;
+	font-size: 15px;
+}
+
 .error-login{
   color: red;
   font-size: 12px;

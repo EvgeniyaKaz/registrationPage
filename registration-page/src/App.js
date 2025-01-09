@@ -1,165 +1,132 @@
+import * as yup from "yup";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import styles from "./App.module.css";
-import { useState, useRef } from "react";
 
 const initialState = {
-  email: "",
-  password: "",
-  repeatPassword: "",
+	email: "",
+	password: "",
+	repeatPassword: "",
 };
 
-const useStore = () => {
-  const [state, setState] = useState(initialState);
-
-  return {
-    getState: () => state,
-    updateState: (fieldName, newValue) => {
-      setState({ ...state, [fieldName]: newValue });
-    },
-  };
-};
+const scheme = yup.object().shape({
+	email: yup
+		.string()
+		.matches(
+			/^[\w_.@]*$/,
+			"Неверный email. Допустимые символы: английские буквы, цифры, точка и нижнее подчеркивание."
+		)
+		.max(
+			20,
+			"Неверный email. Длина email должна быть не больше 20 символов."
+		)
+		.min(
+			2,
+			"Неверный email. Длина email должна быть не меньше 2 символов."
+		),
+	password: yup
+		.string()
+		.matches(
+			/^[\w]*$/,
+			"Неверный пароль. Допустимые символы: цифры и английские буквы."
+		)
+		.max(
+			20,
+			"Неверный пароль. Длина пароля должна быть не больше 20 символов."
+		)
+		.min(
+			5,
+			"Неверный пароль. Длина пароля должна быть не менее 5 символов."
+		),
+	repeatPassword: yup
+		.string()
+		.matches(
+			/^[\w]*$/,
+			"Неверный пароль. Допустимые символы: цифры и английские буквы."
+		)
+		.oneOf([yup.ref("password")], "Пароли не совпадают")
+		.max(
+			20,
+			"Неверный пароль. Длина пароля должна быть не больше 20 символов."
+		)
+		.min(
+			5,
+			"Неверный пароль. Длина пароля должна быть не менее 5 символов."
+		),
+});
 
 function App() {
-  const { getState, updateState } = useStore();
-  const [emailError, setEmailError] = useState(null);
-  const [passwordError, setPasswordError] = useState(null);
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+	} = useForm({
+		defaultValues: initialState,
+		resolver: yupResolver(scheme),
+	});
 
-  const submitButtonRef = useRef(null);
+	const emailError = errors.email?.message;
+	const passwordError = errors.password?.message;
+	const repeatPassword = errors.repeatPassword?.message;
 
-  const sendData = (event) => {
-    event.preventDefault();
-    console.log(getState());
-  };
+	const sendData = (formData) => {
+		console.log(formData);
+	};
 
-  console.log(getState());
-
-  const { email, password, repeatPassword } = getState();
-
-  const onChangeEmail = ({ target }) => {
-    updateState(target.name, target.value);
-    if (!/^[\w_.@]*$/.test(target.value)) {
-      setEmailError(
-        "Неверный email. Допустимые символы: английские буквы, цифры, точка и нижнее подчеркивание."
-      );
-    } else if (target.value.length > 20) {
-      setEmailError(
-        "Неверный email. Длина email должна быть не больше 20 символов."
-      );
-    } else {
-      setEmailError(null);
-    }
-  };
-
-  const onBlurEmail = ({ target }) => {
-    if (target.value.length < 2) {
-      setEmailError(
-        "Неверный email. Длина email должна быть не меньше 2 символов."
-      );
-    } else {
-      setEmailError(null);
-    }
-  };
-
-  const onChangePassword = ({ target }) => {
-    updateState(target.name, target.value);
-    if (!/^[\w]*$/.test(target.value)) {
-      setPasswordError(
-        "Неверный пароль. Допустимые символы: цифры и английские буквы."
-      );
-    } else if (target.value.length > 20) {
-      setPasswordError(
-        "Неверный пароль. Длина пароля должна быть не больше 20 символов."
-      );
-    } else {
-      setPasswordError(null);
-    }
-  };
-
-  const onBlurPassword = ({ target }) => {
-    if (target.value.length < 5) {
-      setPasswordError(
-        "Неверный пароль. Длина пароля должна быть не менее 5 символов."
-      );
-    } else {
-      setPasswordError(null);
-    }
-  };
-
-  const onBlurRepeatPassword = ({ target }) => {
-    if (target.value.length < 5) {
-      setPasswordError(
-        "Неверный пароль. Длина пароля должна быть не менее 5 символов."
-      );
-    } else if (repeatPassword !== password) {
-      setPasswordError("Пароли несовпадают.");
-    } else {
-      setPasswordError(null);
-    }
-  };
-
-  const blockButton = () => {
-    if (
-      emailError !== null ||
-      passwordError !== null ||
-      email === "" ||
-      password === "" ||
-      repeatPassword === "" ||
-      repeatPassword !== password
-    ) {
-      return true;
-    } else {
-      return false;
-    }
-  };
-
-  return (
-    <div className={styles.container}>
-      <form className={styles["container-form"]} onSubmit={sendData}>
-        <header className={styles["container-form-header"]}>Регистрация</header>
-        <input
-          type="email"
-          name="email"
-          value={email}
-          placeholder="Введите email"
-          className={styles["container-form-input"]}
-          onChange={onChangeEmail}
-          onBlur={onBlurEmail}
-        />
-        <br />
-        <input
-          type="password"
-          name="password"
-          value={password}
-          placeholder="Введите пароль"
-          className={styles["container-form-input"]}
-          onChange={onChangePassword}
-          onBlur={onBlurPassword}
-        />
-        <br />
-        <input
-          type="password"
-          name="repeatPassword"
-          value={repeatPassword}
-          placeholder="Повторите пароль"
-          className={styles["container-form-input"]}
-          onChange={onChangePassword}
-          onBlur={onBlurRepeatPassword}
-        />
-        <br />
-        <button
-          ref={submitButtonRef}
-          type="submit"
-          className={styles["container-form-buttonn"]}
-          disabled={blockButton()}
-        >
-          Зарегистрироваться
-        </button>
-        <p className={styles["error-login"]}>
-          {emailError}
-          {passwordError}
-        </p>
-      </form>
-    </div>
-  );
+	return (
+		<div className={styles.container}>
+			<form
+				className={styles["container-form"]}
+				onSubmit={handleSubmit(sendData)}
+			>
+				<header className={styles["container-form-header"]}>
+					Регистрация
+				</header>
+				<input
+					type="email"
+					name="email"
+					placeholder="Введите email"
+					className={styles["container-form-input"]}
+					{...register("email")}
+				/>
+				<br />
+				<input
+					type="password"
+					name="password"
+					placeholder="Введите пароль"
+					className={styles["container-form-input"]}
+					{...register("password")}
+				/>
+				<br />
+				<input
+					type="password"
+					name="repeatPassword"
+					placeholder="Повторите пароль"
+					className={styles["container-form-input"]}
+					{...register("repeatPassword")}
+				/>
+				<br />
+				<button
+					type="submit"
+					className={
+						!!emailError || !!passwordError || !!repeatPassword
+							? styles["container-form-button-block"]
+							: styles["container-form-button"]
+					}
+					disabled={
+						!!emailError || !!passwordError || !!repeatPassword
+					}
+				>
+					Зарегистрироваться
+				</button>
+				<p className={styles["error-login"]}>
+					{emailError}
+					{passwordError}
+					{repeatPassword}
+				</p>
+			</form>
+		</div>
+	);
 }
 
 export default App;
