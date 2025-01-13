@@ -1,5 +1,5 @@
 import styles from "./App.module.css";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const initialState = {
 	email: "",
@@ -67,8 +67,6 @@ function App() {
 			setPasswordError(
 				"Неверный пароль. Длина пароля должна быть не больше 20 символов."
 			);
-		} else if (email !== "" && repeatPassword === password) {
-			return submitButtonRef.current.focus();
 		} else {
 			setPasswordError(null);
 		}
@@ -83,8 +81,7 @@ function App() {
 			setPasswordError(null);
 		}
 	};
-	console.log(password);
-	console.log(repeatPassword);
+
 	const onBlurRepeatPassword = ({ target }) => {
 		if (target.value.length < 5) {
 			setPasswordError(
@@ -111,6 +108,16 @@ function App() {
 			return false;
 		}
 	};
+
+	useEffect(() => {
+		if (
+			emailError === null &&
+			passwordError === null &&
+			repeatPassword === password
+		) {
+			return submitButtonRef.current.focus();
+		}
+	});
 
 	return (
 		<div className={styles.container}>
