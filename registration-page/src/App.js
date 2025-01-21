@@ -14,7 +14,8 @@ function App() {
 	const {
 		register,
 		handleSubmit,
-		formState: { isValid, errors },
+		trigger,
+		formState: { isValid, errors, touchedFields },
 	} = useForm({
 		defaultValues: initialState,
 		resolver: yupResolver(scheme),
@@ -56,7 +57,11 @@ function App() {
 					type="password"
 					placeholder="Введите пароль"
 					className={styles["container-form-input"]}
-					{...register("password")}
+					{...register("password", {
+						onChange: () =>
+							touchedFields.repeatPassword &&
+							trigger("repeatPassword"),
+					})}
 				/>
 				<br />
 				<input
